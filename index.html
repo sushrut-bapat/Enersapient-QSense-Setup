@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>EnerSapient-QSense Setup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2em;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    button {
+      margin: 12px;
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #00a877;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #008a63;
+    }
+    #countdown-section {
+      display: none;
+      margin-top: 20px;
+    }
+    #countdown {
+      font-weight: bold;
+      font-size: 20px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Welcome to EnerSapient-QSense Setup</h2>
+    <p>If you are setting up the device for the first time, you will have to connect the device to the local Wi-Fi.</p>
+    <p>We will do this here along with complete device setup.</p>
+    <p><strong>Please start by connecting your laptop or cellphone to <code>ENERSAPIENT-QSENSE</code>.</strong></p>
+    <p>Once connected, click the "Begin" button below.</p>
+    <p>If your device is already on the local Wi-Fi, click <strong>"Go to Setup Portal"</strong> instead.</p>
+
+    <button onclick="startSetup()">Begin</button>
+    <button onclick="goToLocal()">Go to Setup Portal</button>
+
+    <div id="countdown-section">
+      <p>Wi-Fi configuration complete. Redirecting to the local setup portal in <span id="countdown">10</span> seconds...</p>
+    </div>
+  </div>
+
+  <script>
+    function startSetup() {
+      document.getElementById("countdown-section").style.display = "block";
+
+      let countdown = 10;
+      const countdownEl = document.getElementById("countdown");
+
+      const interval = setInterval(() => {
+        countdown--;
+        countdownEl.textContent = countdown;
+        if (countdown <= 0) {
+          clearInterval(interval);
+          window.location.href = "http://enersapient-q.local";
+        }
+      }, 1000);
+    }
+
+    function goToLocal() {
+      window.location.href = "http://enersapient-q.local";
+    }
+  </script>
+</body>
+</html>
