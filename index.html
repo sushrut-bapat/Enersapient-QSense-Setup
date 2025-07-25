@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ENERSAPIENT&trade; | QSense Setup</title>
+  <title>EnerSapient&trade; | QSense Setup</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
@@ -41,38 +41,73 @@
       font-size: 20px;
       margin-top: 10px;
     }
+    #status {
+      font-size: 16px;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Welcome to ENERSAPIENT&trade; | QSense Setup</h2>
-    <p>If you are setting up the device for the first time, you will have to connect the device to the local Wi-Fi.</p>
+    <h2>Welcome to EnerSapient&trade; | QSense Setup</h2>
+    <p>If you are setting up the device for the first time, you will have to bring the device over to the local Wi-Fi.</p>
     <p>We will do this here along with complete device setup.</p>
-    <p><strong>Please start by connecting your laptop or cellphone to <code>ENERSAPIENT-QSENSE</code>.</strong></p>
-    <p>Once connected, click the "Begin" button below.</p>
+    <p>Please complete the power connections as per the Manual.  Once powered the device will become an access point (AP).</p>
+    <p><strong>Please start by connecting your laptop or cellphone to the AP named <code>ENERSAPIENT-QSENSE</code>.</strong></p>
+    <p>Once connected, click the "Begin" button below to start the setup.</p>
     <p>If your device is already on the local Wi-Fi, click <strong>"Go to Setup Portal"</strong> instead.</p>
 
     <button onclick="startSetup()">Begin</button>
     <button onclick="goToLocal()">Go to Setup Portal</button>
 
     <div id="countdown-section">
-      <p>Wi-Fi configuration complete. Redirecting to the local setup portal in <span id="countdown">10</span> seconds...</p>
+      <p id="status"></p>
     </div>
   </div>
 
   <script>
-    function startSetup() {
-      document.getElementById("countdown-section").style.display = "block";
+    async function checkHost(url, timeout = 3000) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        await fetch(url, { signal: controller.signal, mode: 'no-cors' });
+        clearTimeout(timeoutId);
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
 
-      let countdown = 10;
-      const countdownEl = document.getElementById("countdown");
+    async function startSetup() {
+      const statusEl = document.getElementById("status");
+      const countdownSection = document.getElementById("countdown-section");
+      countdownSection.style.display = "block";
 
-      const interval = setInterval(() => {
-        countdown--;
-        countdownEl.textContent = countdown;
-        if (countdown <= 0) {
-          clearInterval(interval);
-          window.location.href = "http://enersapient-qsense.local";
+      // Step 1: Show 5-second countdown while checking AP
+      let apCountdown = 5;
+      const apTimer = setInterval(() => {
+        statusEl.textContent = `Checking for AP connection (${apCountdown} seconds remaining)...`;
+        apCountdown--;
+        if (apCountdown < 0) {
+          clearInterval(apTimer);
+
+          const primaryURL = "http://192.168.4.1";
+          const fallbackURL = "http://enersapient-qsense.local";
+
+          checkHost(`${primaryURL}/`).then((available) => {
+            const redirectURL = available ? primaryURL : fallbackURL;
+
+            // Step 2: Wi-Fi configuration complete, 10s countdown
+            let redirectCountdown = 10;
+            const redirectTimer = setInterval(() => {
+              statusEl.textContent = `Wi-Fi configuration complete. Redirecting in ${redirectCountdown} seconds...`;
+              redirectCountdown--;
+              if (redirectCountdown < 0) {
+                clearInterval(redirectTimer);
+                window.location.href = redirectURL;
+              }
+            }, 1000);
+          });
         }
       }, 1000);
     }
