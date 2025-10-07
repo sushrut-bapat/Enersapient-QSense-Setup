@@ -16,15 +16,13 @@ h3{color:#333;margin-bottom:5px}
 input[type=text]{flex:1;padding:10px;margin:5px 0;border:1px solid #ccc;border-radius:5px;background:#f9f9f9}
 input[readonly]{background:#eee;border:none}
 .status{font-size:12px;color:#777;margin-top:20px;text-align:left;line-height:1.6}
+.hint{font-size:13px;color:#555;text-align:left;margin-top:10px;line-height:1.6}
 .button-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .button-row .button{flex:1;min-width:120px}
 .button.green{background:#28a745}
 .button.red{background:#dc3545}
 .button.disabled{opacity:0.5;cursor:not-allowed}
 ul{list-style:none;padding:0;margin:0}
-#progressWrapper{width:100%;background:#ddd;border-radius:5px;overflow:hidden;margin-top:20px;height:22px;display:none}
-#progressBar{height:100%;width:0%;background:#007BFF;color:white;text-align:center;line-height:22px;transition: width 0.1s;}
-ul li{margin:10px 0}
 .error{color:#d9534f}
 .ok{color:#28a745}
 .neutral{color:#000}
@@ -45,16 +43,13 @@ ul li{margin:10px 0}
     <button id="submitSerial" class="button green">Submit</button>
   </div>
 
-  <!-- Connect button -->
   <button id="connectBtn" class="button disabled" disabled>Connect to Device</button>
 
-  <!-- Link display for manual access -->
-  <p id="deviceLink" class="status"></p>
+  <p class="status" id="status">Enter the serial number and click Submit to activate the connect button.</p>
 
-  <!-- Status / instructions -->
-  <p class="status" id="status">
-    If this is your initial setup, connect to the <strong>ENERSAPIENT-QSENSE</strong> Wi-Fi, 
-    enter your serial number, then click <strong>Submit</strong> and <strong>Connect to Device</strong>.
+  <p class="hint">
+    💡 <strong>Tip:</strong> If this is your first setup, connect your computer or phone to the Wi-Fi network <strong>ENERSAPIENT-QSENSE</strong> first, then click <em>Connect to Device</em>.  
+    If the link doesn’t open automatically, you can manually visit: <code>enersapient-qsense-XXXX.local</code>
   </p>
 </div>
 
@@ -63,36 +58,31 @@ const serialInput = document.getElementById('serialNumber');
 const submitBtn = document.getElementById('submitSerial');
 const connectBtn = document.getElementById('connectBtn');
 const statusEl = document.getElementById('status');
-const deviceLinkEl = document.getElementById('deviceLink');
 
 submitBtn.addEventListener('click', () => {
-  const serial = serialInput.value.trim().toLowerCase();
-  if (!serial) {
+  const serial = serialInput.value.trim();
+  if(!serial){
     alert('Please enter a serial number!');
     return;
   }
-
-  // Enable connect button
+  
+  // Activate the connect button
   connectBtn.disabled = false;
   connectBtn.classList.remove('disabled');
   connectBtn.classList.add('green');
   connectBtn.textContent = `Connect to Device`;
-  statusEl.textContent = 'Click the green button below to open your device page.';
-
-  // Save hostname
-  const hostname = `enersapient-qsense-${serial}.local`;
-  connectBtn.dataset.hostname = hostname;
-
-  // Display link (safe for HTTPS page)
-  const url = `http://${hostname}/`;
-  deviceLinkEl.innerHTML = `🔗 Or open manually: <a href="${url}" target="_blank">${hostname}</a>`;
+  statusEl.textContent = 'Click the green button below to connect to your device.';
+  
+  // Save the hostname for redirect
+  connectBtn.dataset.hostname = `enersapient-qsense-${serial}.local`;
 });
 
 connectBtn.addEventListener('click', () => {
   const hostname = connectBtn.dataset.hostname;
-  if (!hostname) return;
-  // Open directly in a new tab/window (bypasses mixed content restriction)
-  window.open(`http://${hostname}/`, '_blank');
+  if(hostname){
+    // Open in new tab/window
+    window.open(`http://${hostname}/`, '_blank');
+  }
 });
 </script>
 </body>
