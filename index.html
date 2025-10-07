@@ -47,7 +47,9 @@ ul li{margin:10px 0}
 
   <button id="connectBtn" class="button disabled" disabled>Connect to Device</button>
 
-  <p class="status" id="status">Enter the serial number and click Submit to activate the connect button.</p>
+  <p class="status" id="status">
+    If this is your initial setup, connect to the <strong>ENERSAPIENT-QSENSE</strong> Wi-Fi and then click Submit.
+  </p>
 </div>
 
 <script>
@@ -69,16 +71,27 @@ submitBtn.addEventListener('click', () => {
   connectBtn.classList.add('green');
   connectBtn.textContent = `Connect to Device`;
   statusEl.textContent = 'Click the green button below to connect to your device.';
-  
+
   // Save the hostname for redirect
   connectBtn.dataset.hostname = `enersapient-qsense-${serial}.local`;
 });
 
-connectBtn.addEventListener('click', () => {
+connectBtn.addEventListener('click', async () => {
   const hostname = connectBtn.dataset.hostname;
-  if(hostname){
+  if(!hostname) return;
+
+  const url = `http://${hostname}/`;
+  try {
+    // Try fetching to check if the device is reachable
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
+    await fetch(url, { signal: controller.signal, mode: 'no-cors' });
+    clearTimeout(timeoutId);
     // Open in new tab/window
-    window.open(`http://${hostname}/`, '_blank');
+    window.open(url, '_blank');
+  } catch (err) {
+    statusEl.textContent = '⚠️ Could not connect to the device. Make sure you are connected to the ENERSAPIENT-QSENSE Wi-Fi and the serial number is correct.';
+    statusEl.classList.add('error');
   }
 });
 </script>
