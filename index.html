@@ -1,120 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>EnerSapient&trade; | QSense Setup</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 2em;
-      background-color: #f5f5f5;
-      color: #333;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 2em;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    button {
-      margin: 12px;
-      padding: 12px 24px;
-      font-size: 16px;
-      background-color: #0056b3;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #008a63;
-    }
-    #countdown-section {
-      display: none;
-      margin-top: 20px;
-    }
-    #countdown {
-      font-weight: bold;
-      font-size: 20px;
-      margin-top: 10px;
-    }
-    #status {
-      font-size: 16px;
-      margin-top: 20px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EnerSapient Device Setup</title>
+<style>
+/* Shared CSS */
+body{font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:20px;display:flex;justify-content:center}
+.container{background:#fff;padding:25px;border-radius:12px;box-shadow:0 0 15px rgba(0,0,0,.1);width:100%;max-width:420px;box-sizing:border-box}
+h2{text-align:center;color:#333;margin-bottom:10px}
+h3{color:#333;margin-bottom:5px}
+.section{margin-bottom:10px;display:flex;gap:5px;align-items:center}
+.button,a.button,input[type=submit]{display:block;width:auto;padding:12px;margin:8px 0;background:#07F;color:#fff;border:none;border-radius:5px;font-size:15px;text-align:center;text-decoration:none;cursor:pointer;transition:background-color .3s}
+.button:hover{background:#0056b3}
+input[type=text]{flex:1;padding:10px;margin:5px 0;border:1px solid #ccc;border-radius:5px;background:#f9f9f9}
+input[readonly]{background:#eee;border:none}
+.status{font-size:12px;color:#777;margin-top:20px;text-align:left;line-height:1.6}
+.button-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.button-row .button{flex:1;min-width:120px}
+.button.green{background:#28a745}
+.button.red{background:#dc3545}
+.button.disabled{opacity:0.5;cursor:not-allowed}
+ul{list-style:none;padding:0;margin:0}
+#progressWrapper{width:100%;background:#ddd;border-radius:5px;overflow:hidden;margin-top:20px;height:22px;display:none}
+#progressBar{height:100%;width:0%;background:#007BFF;color:white;text-align:center;line-height:22px;transition: width 0.1s;}
+ul li{margin:10px 0}
+.error{color:#d9534f}
+.ok{color:#28a745}
+.neutral{color:#000}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>Welcome to EnerSapient&trade; | QSense Setup</h2>
-    <p>If you are setting up the device for the first time, you will have to bring the device over to the local Wi-Fi.</p>
-    <p>We will do this here along with complete device setup.</p>
-    <p>Please complete the power connections as per the Manual.  Once powered the device will become an access point (AP).</p>
-    <p><strong>Please start by connecting your laptop or cellphone to the AP named <code>ENERSAPIENT-QSENSE</code>.</strong></p>
-    <p>Once connected, click the "Begin" button below to start the setup.</p>
-    <p>If your device is already on the local Wi-Fi, click <strong>"Go to Setup Portal"</strong> instead.</p>
-
-    <button onclick="startSetup()">Begin</button>
-    <button onclick="goToLocal()">Go to Setup Portal</button>
-
-    <div id="countdown-section">
-      <p id="status"></p>
-    </div>
+<div class="container">
+  <!-- Shared header -->
+  <div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:20px'>
+    <h2 style='margin:0'>EnerSapient&trade;</h2>
+    <img src='https://img1.wsimg.com/isteam/ip/d28fe43b-51f2-49a9-be42-73f2bee9e7e6/blob-49e5029.png/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:1200,cg:true' alt='Logo' style='height:100px'>
   </div>
 
-  <script>
-    async function checkHost(url, timeout = 3000) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
-        await fetch(url, { signal: controller.signal, mode: 'no-cors' });
-        clearTimeout(timeoutId);
-        return true;
-      } catch (err) {
-        return false;
-      }
-    }
+  <!-- Serial number form -->
+  <h3>Enter Device Serial Number</h3>
+  <div class="section">
+    <input type="text" id="serialNumber" placeholder="Enter serial number">
+    <button id="submitSerial" class="button green">Submit</button>
+  </div>
 
-    async function startSetup() {
-      const statusEl = document.getElementById("status");
-      const countdownSection = document.getElementById("countdown-section");
-      countdownSection.style.display = "block";
+  <button id="connectBtn" class="button disabled" disabled>Connect to Device</button>
 
-      // Step 1: Show 5-second countdown while checking AP
-      let apCountdown = 5;
-      const apTimer = setInterval(() => {
-        statusEl.textContent = `Checking for AP connection (${apCountdown} seconds remaining)...`;
-        apCountdown--;
-        if (apCountdown < 0) {
-          clearInterval(apTimer);
+  <p class="status" id="status">Enter the serial number and click Submit to activate the connect button.</p>
+</div>
 
-          const primaryURL = "http://192.168.4.1";
-          const fallbackURL = "http://enersapient-qsense.local";
+<script>
+const serialInput = document.getElementById('serialNumber');
+const submitBtn = document.getElementById('submitSerial');
+const connectBtn = document.getElementById('connectBtn');
+const statusEl = document.getElementById('status');
 
-          checkHost(`${primaryURL}/`).then((available) => {
-            const redirectURL = available ? primaryURL : fallbackURL;
+submitBtn.addEventListener('click', () => {
+  const serial = serialInput.value.trim();
+  if(!serial){
+    alert('Please enter a serial number!');
+    return;
+  }
+  
+  // Activate the connect button
+  connectBtn.disabled = false;
+  connectBtn.classList.remove('disabled');
+  connectBtn.classList.add('green');
+  connectBtn.textContent = `Connect to Device`;
+  statusEl.textContent = 'Click the green button below to connect to your device.';
+  
+  // Save the hostname for redirect
+  connectBtn.dataset.hostname = `enersapient-qsense-${serial}.local`;
+});
 
-            // Step 2: Wi-Fi configuration complete, 10s countdown
-            let redirectCountdown = 10;
-            const redirectTimer = setInterval(() => {
-              statusEl.textContent = `Wi-Fi configuration complete. Redirecting in ${redirectCountdown} seconds...`;
-              redirectCountdown--;
-              if (redirectCountdown < 0) {
-                clearInterval(redirectTimer);
-                window.location.href = redirectURL;
-              }
-            }, 1000);
-          });
-        }
-      }, 1000);
-    }
-
-    function goToLocal() {
-      window.location.href = "http://enersapient-qsense.local";
-    }
-  </script>
+connectBtn.addEventListener('click', () => {
+  const hostname = connectBtn.dataset.hostname;
+  if(hostname){
+    // Open in new tab/window
+    window.open(`http://${hostname}/`, '_blank');
+  }
+});
+</script>
 </body>
 </html>
